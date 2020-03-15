@@ -1,9 +1,10 @@
 #include <Servo.h>
 #include <CheapStepper.h>
 
-CheapStepper stepper (4, 5, 6, 7);
+CheapStepper stepperExtractor (4, 5, 6, 7);
 Servo servoLockWallet;
 Servo servoSplitWallet;
+Servo servoExtractor;
 int triggerPin = 3;
 
 void setup() {
@@ -11,16 +12,21 @@ void setup() {
   pinMode(triggerPin, INPUT); 
   servoLockWallet.attach(8);
   servoSplitWallet.attach(9);
-  test();
+  servoExtractor.attach(2);
+  // test();
 }
 
 void loop() {
   if(triggered()) {
     lockWallet();
-    splitWallet();
+    splitEdge();
     extractEdge();
     extractWallet();
-    reset();
+    squeezeEdge();
+    extractEdge();
+    releaseEdge();
+    extractWallet();
+    unlockWallet();
   }
 }
 
@@ -31,17 +37,31 @@ bool triggered() {
 }
 
 void extractEdge() {
-  // do something clever
+  servoExtractor.write(5);
+  delay(500);
+  servoExtractor.write(10);
+  delay(500);
+  servoExtractor.write(15);
+  delay(500);
+  servoExtractor.write(20);
+  delay(500);
+  servoExtractor.write(100);
+  delay(500);
 }
 
 void extractWallet() {
-  stepper.moveDegrees(true, 360 * 3.5);
+  stepperExtractor.moveDegrees(true, 360 * 3.5);
 }
 
-void splitWallet() {
+void splitEdge() {
   servoSplitWallet.write(0);
   delay(500);
-  servoSplitWallet.write(45);
+  servoSplitWallet.write(90);
+  delay(500);
+}
+
+void squeezeEdge() {
+  servoSplitWallet.write(0);
   delay(500);
 }
 
@@ -50,15 +70,24 @@ void lockWallet() {
   delay(500);
 }
 
-void reset() {
+void releaseEdge() {
   servoSplitWallet.write(90);
+  delay(500);
+}
+
+void unlockWallet() {
   servoLockWallet.write(160);
   delay(500);
 }
 
+void reset() {
+  releaseEdge();
+  unlockWallet();
+}
+
 void test() {
   lockWallet();
-  splitWallet();
+  splitEdge();
+  extractEdge();
   reset();
-  delay(1000);
 }
