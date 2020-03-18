@@ -5,6 +5,8 @@ CheapStepper stepperExtractor (4, 5, 6, 7);
 Servo servoLockWallet;
 Servo servoSplitWallet;
 Servo servoExtractor;
+Servo servoGripperLeft;
+Servo servoGripperRight;
 int triggerPin = 3;
 
 void setup() {
@@ -13,20 +15,34 @@ void setup() {
   servoLockWallet.attach(8);
   servoSplitWallet.attach(9);
   servoExtractor.attach(2);
-  // test();
+  servoGripperLeft.attach(13);
+  servoGripperRight.attach(10);
+  reset();
 }
 
-void loop() {
+void loop() {  
   if(triggered()) {
+    moveToExtractEdge();
+    moveToClearEdge();
     lockWallet();
     splitEdge();
+    moveToExtractEdge();
+    gripEdge();
     extractEdge();
+    catchEdge();
+    ungripEdge();
+    moveToClearEdge();
     extractWallet();
     squeezeEdge();
-    extractEdge();
+    moveToExtractEdge();
+    gripEdge();
     releaseEdge();
-    extractWallet();
     unlockWallet();
+    extractEdge();
+    catchEdge();
+    ungripEdge();
+    moveToClearEdge();
+    extractWallet();
   }
 }
 
@@ -36,15 +52,20 @@ bool triggered() {
   return (value == HIGH);
 }
 
-void extractEdge() {
+void moveToExtractEdge() {
+  ungripEdge();
   servoExtractor.write(5);
   delay(500);
-  servoExtractor.write(10);
-  delay(500);
-  servoExtractor.write(15);
-  delay(500);
-  servoExtractor.write(20);
-  delay(500);
+}
+
+void extractEdge() {
+  for (int i = 10; i <= 35; i += 5) {
+    servoExtractor.write(i);
+    delay(500);
+  }
+}
+
+void moveToClearEdge() {
   servoExtractor.write(100);
   delay(500);
 }
@@ -53,15 +74,22 @@ void extractWallet() {
   stepperExtractor.moveDegrees(true, 360 * 3.5);
 }
 
+void catchEdge() {
+  stepperExtractor.moveDegrees(true, 20);
+}
+
 void splitEdge() {
-  servoSplitWallet.write(0);
-  delay(500);
-  servoSplitWallet.write(90);
-  delay(500);
+  squeezeEdge();
+  separateEdge();
 }
 
 void squeezeEdge() {
   servoSplitWallet.write(0);
+  delay(500);
+}
+
+void separateEdge() {
+  servoSplitWallet.write(90);
   delay(500);
 }
 
@@ -80,9 +108,23 @@ void unlockWallet() {
   delay(500);
 }
 
+void gripEdge() {
+  servoGripperLeft.write(88);
+  servoGripperRight.write(2);
+  delay(500);
+}
+
+void ungripEdge() {
+  servoGripperLeft.write(80);
+  servoGripperRight.write(20);
+  delay(500);
+}
+
 void reset() {
   releaseEdge();
   unlockWallet();
+  ungripEdge();
+  separateEdge();
 }
 
 void test() {
