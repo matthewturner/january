@@ -2,16 +2,19 @@
 #include <CheapStepper.h>
 
 CheapStepper stepperExtractor (4, 5, 6, 7);
+CheapStepper stepperFeeder (22, 24, 26, 28);
 Servo servoLockWallet;
 Servo servoSplitWallet;
 Servo servoExtractor;
 Servo servoGripperLeft;
 Servo servoGripperRight;
-int triggerPin = 3;
+int pinWalletIsInExtractor = 3;
+int pinWalletsAreAvailableInFeeder = 20;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(triggerPin, INPUT); 
+  pinMode(pinWalletIsInExtractor, INPUT);
+  pinMode(pinWalletsAreAvailableInFeeder, INPUT);
   servoLockWallet.attach(8);
   servoSplitWallet.attach(9);
   servoExtractor.attach(2);
@@ -21,51 +24,80 @@ void setup() {
 }
 
 void loop() {  
-  if(triggered()) {
-    moveToExtractEdge();
-    moveToClearEdge();
-    lockWallet();
-    splitEdge();
-    moveToExtractEdge();
-    gripEdge();
-    extractEdge();
-    catchEdge();
-    ungripEdge();
-    moveToClearEdge();
-    extractWallet();
-    squeezeEdge();
-    moveToExtractEdge();
-    gripEdge();
-    releaseEdge();
-    unlockWallet();
-    extractEdge();
-    catchEdge();
-    ungripEdge();
-    moveToClearEdge();
-    extractWallet();
+  if(!walletsAreAvailableInFeeder() && !walletIsInExtractor()) {
+    return;
   }
+
+  while (!walletIsInExtractor()) {
+    feedWallet();
+  }
+
+  // adjust position of the wallet
+  slideGripperBack();
+  ungrip();
+  swingGripperIn();
+  swingGripperOut();
+
+  // extract paper
+  lockWallet();
+  squeezeEdge();
+  separateEdge();
+  swingGripperIn();
+  grip();
+  slideGripperAway();
+  catchEdge();
+  ungrip();
+  swingGripperOut();
+  extractWallet();
+
+  //extract empty wallet
+  slideGripperBack();
+  squeezeEdge();
+  swingGripperIn();
+  grip();
+  releaseEdge();
+  unlockWallet();
+  slideGripperAway();
+  catchEdge();
+  ungrip();
+  swingGripperOut();
+  extractWallet();
 }
 
-bool triggered() {
-  int value = digitalRead(triggerPin);
+void feedWallet() {
+ stepperFeeder.moveDegrees(true, 360);
+}
+
+bool walletsAreAvailableInFeeder() {
+  int value = digitalRead(pinWalletsAreAvailableInFeeder);
+  Serial.println(value);
+  // return (value == HIGH);
+  return true;
+}
+
+bool walletIsInExtractor() {
+  int value = digitalRead(pinWalletIsInExtractor);
   Serial.println(value);
   return (value == HIGH);
 }
 
-void moveToExtractEdge() {
-  ungripEdge();
+void swingGripperIn() {
   servoExtractor.write(5);
   delay(500);
 }
 
-void extractEdge() {
+void slideGripperAway() {
   for (int i = 10; i <= 35; i += 5) {
     servoExtractor.write(i);
     delay(500);
   }
 }
 
-void moveToClearEdge() {
+void slideGripperBack() {
+  // do nothing yet
+}
+
+void swingGripperOut() {
   servoExtractor.write(100);
   delay(500);
 }
@@ -76,11 +108,6 @@ void extractWallet() {
 
 void catchEdge() {
   stepperExtractor.moveDegrees(true, 20);
-}
-
-void splitEdge() {
-  squeezeEdge();
-  separateEdge();
 }
 
 void squeezeEdge() {
@@ -108,13 +135,13 @@ void unlockWallet() {
   delay(500);
 }
 
-void gripEdge() {
+void grip() {
   servoGripperLeft.write(88);
   servoGripperRight.write(2);
   delay(500);
 }
 
-void ungripEdge() {
+void ungrip() {
   servoGripperLeft.write(80);
   servoGripperRight.write(20);
   delay(500);
@@ -123,13 +150,6 @@ void ungripEdge() {
 void reset() {
   releaseEdge();
   unlockWallet();
-  ungripEdge();
-  separateEdge();
-}
-
-void test() {
-  lockWallet();
-  splitEdge();
-  extractEdge();
-  reset();
+  ungrip();
+  slideGripperBack();
 }
