@@ -8,7 +8,7 @@ Servo servoSplitWallet;
 Servo servoExtractor;
 Servo servoGripperLeft;
 Servo servoGripperRight;
-int pinWalletIsInExtractor = 3;
+int pinWalletIsInExtractor = 44;
 int pinWalletsAreAvailableInFeeder = 20;
 
 void setup() {
@@ -18,12 +18,12 @@ void setup() {
   servoLockWallet.attach(8);
   servoSplitWallet.attach(9);
   servoExtractor.attach(2);
-  servoGripperLeft.attach(13);
+  servoGripperLeft.attach(46);
   servoGripperRight.attach(10);
   reset();
 }
 
-void loop() {  
+void loop() { 
   if(!walletsAreAvailableInFeeder() && !walletIsInExtractor()) {
     return;
   }
@@ -34,7 +34,7 @@ void loop() {
 
   // adjust position of the wallet
   slideGripperBack();
-  ungrip();
+  clearGrip();
   swingGripperIn();
   swingGripperOut();
 
@@ -42,7 +42,10 @@ void loop() {
   lockWallet();
   squeezeEdge();
   separateEdge();
+  slideGripperAway();
+  ungrip();
   swingGripperIn();
+  slideGripperBack();
   grip();
   slideGripperAway();
   catchEdge();
@@ -51,10 +54,10 @@ void loop() {
   extractWallet();
 
   //extract empty wallet
-  slideGripperBack();
   squeezeEdge();
   swingGripperIn();
   grip();
+  slideGripperBack();
   releaseEdge();
   unlockWallet();
   slideGripperAway();
@@ -87,10 +90,7 @@ void swingGripperIn() {
 }
 
 void slideGripperAway() {
-  for (int i = 10; i <= 35; i += 5) {
-    servoExtractor.write(i);
-    delay(500);
-  }
+  // do nothing yet
 }
 
 void slideGripperBack() {
@@ -136,20 +136,26 @@ void unlockWallet() {
 }
 
 void grip() {
-  servoGripperLeft.write(88);
-  servoGripperRight.write(2);
-  delay(500);
+  setGrip(0);
 }
 
 void ungrip() {
-  servoGripperLeft.write(80);
-  servoGripperRight.write(20);
+  setGrip(30);
+}
+
+void clearGrip() {
+  setGrip(50);
+}
+
+void setGrip(int degrees) {
+  servoGripperLeft.write(80 - degrees);
+  servoGripperRight.write(0 + degrees);
   delay(500);
 }
 
 void reset() {
+  clearGrip();
   releaseEdge();
   unlockWallet();
-  ungrip();
   slideGripperBack();
 }
