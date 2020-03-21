@@ -45,10 +45,10 @@ void processWallet() {
   slideGripperBack();
   clearGrip();
   swingGripperIn();
+  lockWallet();
   swingGripperOut();
 
   // extract paper
-  lockWallet();
   squeezeEdge();
   separateEdge();
   slideGripperAway();
