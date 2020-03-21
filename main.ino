@@ -9,8 +9,9 @@ Servo servoSplitWallet;
 Servo servoExtractor;
 Servo servoGripperLeft;
 Servo servoGripperRight;
-HCSR04 sensorExtractor (39, 37);
-int pinWalletsAreAvailableInFeeder = 20;
+Servo servoSlider;
+UltraSonicDistanceSensor sensorExtractor (39, 37);
+int pinWalletsAreAvailableInFeeder = 31;
 
 void setup() {
   Serial.begin(9600);
@@ -18,18 +19,26 @@ void setup() {
   servoLockWallet.attach(8);
   servoSplitWallet.attach(9);
   servoExtractor.attach(2);
+  servoSlider.attach(25);
   servoGripperLeft.attach(46);
-  servoGripperRight.attach(10);
+  servoGripperRight.attach(47);
   reset();
 }
 
 void loop() { 
   if(!walletsAreAvailableInFeeder() && !walletIsInExtractor()) {
+    Serial.println("Nothing is available.");
+    delay(1000);
     return;
   }
 
-  while (!walletIsInExtractor()) {
+  while (walletsAreAvailableInFeeder() && !walletIsInExtractor()) {
     feedWallet();
+  }
+
+  if(!walletIsInExtractor()) {
+    Serial.println("Nothing is in extractor.");
+    return;
   }
 
   // adjust position of the wallet
@@ -68,82 +77,110 @@ void loop() {
 }
 
 void feedWallet() {
+ Serial.println("Feeding wallet (~5cm)...");
  stepperFeeder.moveDegrees(true, 360);
 }
 
 bool walletsAreAvailableInFeeder() {
-  int value = digitalRead(pinWalletsAreAvailableInFeeder);
-  Serial.println(value);
-  // return (value == HIGH);
-  return true;
+  Serial.println("Checking if wallets are available in feeder...");
+  bool inFeeder = (digitalRead(pinWalletsAreAvailableInFeeder) == HIGH);
+  if (inFeeder) {
+    Serial.println("  Yes :-)");
+  } else {
+    Serial.println("  No :-(");
+  }
+  return inFeeder;
 }
 
 bool walletIsInExtractor() {
-  float value = sensorExtractor.dist();
-  Serial.println(value);
-  return (value <= 10);
+  Serial.println("Checking if wallet is in extractor...");
+  double distance = sensorExtractor.measureDistanceCm();
+  Serial.println(distance);
+  bool inExtractor = (distance <= 10);
+  if (inExtractor) {
+    Serial.println("  Yes :-)");
+  } else {
+    Serial.println("  No :-(");
+  }
+  return inExtractor;
 }
 
 void swingGripperIn() {
+  Serial.println("Swinging gripper in...");
   servoExtractor.write(5);
   delay(500);
 }
 
 void slideGripperAway() {
-  // do nothing yet
+  Serial.println("Sliding gripper away...");
+  servoSlider.write(0);
+  delay(500); 
 }
 
 void slideGripperBack() {
-  // do nothing yet
+  Serial.println("Sliding gripper back...");
+  servoSlider.write(130);
+  delay(500);
 }
 
 void swingGripperOut() {
+  Serial.println("Swinging gripper out...");
   servoExtractor.write(100);
   delay(500);
 }
 
 void extractWallet() {
+  Serial.println("Extracting wallet...");
   stepperExtractor.moveDegrees(true, 360 * 3.5);
 }
 
 void catchEdge() {
+  Serial.println("Catching edge...");
   stepperExtractor.moveDegrees(true, 20);
 }
 
 void squeezeEdge() {
+  Serial.println("Squeezing edge...");
   servoSplitWallet.write(0);
   delay(500);
 }
 
 void separateEdge() {
+  Serial.println("Separating edge...");
   servoSplitWallet.write(90);
   delay(500);
 }
 
 void lockWallet() {
+  Serial.println("Locking wallet...");
   servoLockWallet.write(0);
   delay(500);
 }
 
 void releaseEdge() {
+  Serial.println("Releasing edge...");
   servoSplitWallet.write(90);
   delay(500);
 }
 
 void unlockWallet() {
+  Serial.println("Unlocking wallet...");
   servoLockWallet.write(160);
   delay(500);
 }
 
 void grip() {
+  Serial.println("Gripping...");
   setGrip(0);
 }
 
 void ungrip() {
+  Serial.println("Ungripping...");
   setGrip(15);
 }
 
 void clearGrip() {
+  Serial.println("Clearing grip...");
   setGrip(50);
 }
 
@@ -154,6 +191,7 @@ void setGrip(int degrees) {
 }
 
 void reset() {
+  Serial.println("Resetting...");
   clearGrip();
   releaseEdge();
   unlockWallet();
