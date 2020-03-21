@@ -25,22 +25,22 @@ void setup() {
   reset();
 }
 
-void loop() { 
-  if(!walletsAreAvailableInFeeder() && !walletIsInExtractor()) {
-    Serial.println("Nothing is available.");
-    delay(1000);
+void loop() {
+  if (walletIsInExtractor()) {
+    processWallet();
     return;
   }
 
-  while (walletsAreAvailableInFeeder() && !walletIsInExtractor()) {
+  if (walletsAreAvailableInFeeder()) {
     feedWallet();
-  }
-
-  if(!walletIsInExtractor()) {
-    Serial.println("Nothing is in extractor.");
     return;
   }
+  
+  Serial.println("Nothing is available.");
+  delay(2000);
+}
 
+void processWallet() {
   // adjust position of the wallet
   slideGripperBack();
   clearGrip();
@@ -64,9 +64,10 @@ void loop() {
 
   //extract empty wallet
   squeezeEdge();
+  clearGrip();
   swingGripperIn();
-  grip();
   slideGripperBack();
+  grip();
   releaseEdge();
   unlockWallet();
   slideGripperAway();
