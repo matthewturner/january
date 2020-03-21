@@ -1,5 +1,6 @@
 #include <Servo.h>
 #include <CheapStepper.h>
+#include <HCSR04.h>
 
 CheapStepper stepperExtractor (4, 5, 6, 7);
 CheapStepper stepperFeeder (22, 24, 26, 28);
@@ -8,12 +9,11 @@ Servo servoSplitWallet;
 Servo servoExtractor;
 Servo servoGripperLeft;
 Servo servoGripperRight;
-int pinWalletIsInExtractor = 44;
+HCSR04 sensorExtractor (39, 37);
 int pinWalletsAreAvailableInFeeder = 20;
 
 void setup() {
   Serial.begin(9600);
-  pinMode(pinWalletIsInExtractor, INPUT);
   pinMode(pinWalletsAreAvailableInFeeder, INPUT);
   servoLockWallet.attach(8);
   servoSplitWallet.attach(9);
@@ -79,9 +79,9 @@ bool walletsAreAvailableInFeeder() {
 }
 
 bool walletIsInExtractor() {
-  int value = digitalRead(pinWalletIsInExtractor);
+  float value = sensorExtractor.dist();
   Serial.println(value);
-  return (value == HIGH);
+  return (value <= 10);
 }
 
 void swingGripperIn() {
@@ -140,7 +140,7 @@ void grip() {
 }
 
 void ungrip() {
-  setGrip(30);
+  setGrip(15);
 }
 
 void clearGrip() {
