@@ -10,6 +10,7 @@ Servo servoExtractor;
 Servo servoGripperLeft;
 Servo servoGripperRight;
 Servo servoSlider;
+Servo servoFilter;
 UltraSonicDistanceSensor sensorExtractor (39, 37);
 int pinWalletsAreAvailableInFeeder = 31;
 
@@ -22,6 +23,7 @@ void setup() {
   servoSlider.attach(25);
   servoGripperLeft.attach(46);
   servoGripperRight.attach(47);
+  servoFilter.attach(30);
   reset();
 }
 
@@ -60,6 +62,7 @@ void processWallet() {
   catchEdge();
   ungrip();
   swingGripperOut();
+  filterPaper();
   extractWallet();
 
   //extract empty wallet
@@ -74,6 +77,7 @@ void processWallet() {
   catchEdge();
   ungrip();
   swingGripperOut();
+  filterWallet();
   extractWallet();
 }
 
@@ -177,7 +181,7 @@ void grip() {
 
 void ungrip() {
   Serial.println("Ungripping...");
-  setGrip(15);
+  setGrip(10);
 }
 
 void clearGrip() {
@@ -191,10 +195,23 @@ void setGrip(int degrees) {
   delay(500);
 }
 
+void filterPaper() {
+  Serial.println("Filtering paper...");
+  servoFilter.write(0);
+  delay(500);
+}
+
+void filterWallet() {
+  Serial.println("Filtering wallet...");
+  servoFilter.write(50);
+  delay(500);
+}
+
 void reset() {
   Serial.println("Resetting...");
   clearGrip();
   releaseEdge();
   unlockWallet();
   slideGripperBack();
+  filterPaper();
 }
