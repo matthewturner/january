@@ -52,10 +52,10 @@ void processWallet() {
 
   // extract paper
   squeezeEdge();
-  separateEdge();
   slideGripperAway();
   ungrip();
   swingGripperIn();
+  separateEdge();
   slideGripperBack();
   grip();
   slideGripperAway();
@@ -67,8 +67,8 @@ void processWallet() {
 
   //extract empty wallet
   squeezeEdge();
-  clearGrip();
   swingGripperIn();
+  clearGrip();
   slideGripperBack();
   grip();
   releaseEdge();
@@ -152,7 +152,7 @@ void squeezeEdge() {
 
 void separateEdge() {
   Serial.println("Separating edge...");
-  servoSplitWallet.write(90);
+  servoSplitWallet.write(70);
   delay(500);
 }
 
