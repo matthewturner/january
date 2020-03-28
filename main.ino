@@ -28,6 +28,8 @@ void setup() {
 }
 
 void loop() {
+  // testGrip();
+  
   if (walletIsInExtractor()) {
     processWallet();
     return;
@@ -82,6 +84,16 @@ void processWallet() {
   swingGripperOut();
   filterWallet();
   extractWallet();
+}
+
+void testGrip() {
+  swingGripperIn();
+  slideGripperOut();
+  squeezeEdge();
+  separateEdge();
+  grip();
+  ungrip();
+  delay(2000);
 }
 
 void feedWallet() {
@@ -184,7 +196,7 @@ void grip() {
 
 void ungrip() {
   Serial.println("Ungripping...");
-  setGrip(8);
+  setGrip(10);
 }
 
 void clearGrip() {
