@@ -44,21 +44,23 @@ void loop() {
 
 void processWallet() {
   // adjust position of the wallet
-  slideGripperBack();
+  slideGripperIn();
   clearGrip();
   swingGripperIn();
   lockWallet();
   swingGripperOut();
 
   // extract paper
+  filterWallet();
   squeezeEdge();
-  slideGripperAway();
-  ungrip();
-  swingGripperIn();
-  separateEdge();
-  slideGripperBack();
   grip();
-  slideGripperAway();
+  slideGripperOut();
+  swingGripperIn();
+  ungrip();
+  separateEdge();
+  slideGripperIn();
+  grip();
+  slideGripperOut();
   catchEdge();
   ungrip();
   swingGripperOut();
@@ -66,14 +68,15 @@ void processWallet() {
   extractWallet();
 
   //extract empty wallet
+  filterWallet();
   squeezeEdge();
   swingGripperIn();
   clearGrip();
-  slideGripperBack();
+  slideGripperIn();
   grip();
   releaseEdge();
   unlockWallet();
-  slideGripperAway();
+  slideGripperOut();
   catchEdge();
   ungrip();
   swingGripperOut();
@@ -116,13 +119,13 @@ void swingGripperIn() {
   delay(500);
 }
 
-void slideGripperAway() {
+void slideGripperOut() {
   Serial.println("Sliding gripper away...");
   servoSlider.write(0);
   delay(500); 
 }
 
-void slideGripperBack() {
+void slideGripperIn() {
   Serial.println("Sliding gripper back...");
   servoSlider.write(130);
   delay(500);
@@ -152,7 +155,7 @@ void squeezeEdge() {
 
 void separateEdge() {
   Serial.println("Separating edge...");
-  servoSplitWallet.write(70);
+  servoSplitWallet.write(60);
   delay(500);
 }
 
@@ -165,7 +168,7 @@ void lockWallet() {
 void releaseEdge() {
   Serial.println("Releasing edge...");
   servoSplitWallet.write(90);
-  delay(500);
+  delay(1500);
 }
 
 void unlockWallet() {
@@ -181,12 +184,12 @@ void grip() {
 
 void ungrip() {
   Serial.println("Ungripping...");
-  setGrip(10);
+  setGrip(8);
 }
 
 void clearGrip() {
   Serial.println("Clearing grip...");
-  setGrip(50);
+  setGrip(40);
 }
 
 void setGrip(int degrees) {
@@ -212,6 +215,6 @@ void reset() {
   clearGrip();
   releaseEdge();
   unlockWallet();
-  slideGripperBack();
-  filterPaper();
+  slideGripperIn();
+  filterWallet();
 }
