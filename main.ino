@@ -13,10 +13,12 @@ Servo servoSlider;
 Servo servoFilter;
 UltraSonicDistanceSensor sensorExtractor (39, 37);
 int pinWalletsAreAvailableInFeeder = 31;
+int pinWalletIsAligned = 53;
 
 void setup() {
   Serial.begin(9600);
   pinMode(pinWalletsAreAvailableInFeeder, INPUT);
+  pinMode(pinWalletIsAligned, INPUT);
   servoLockWallet.attach(8);
   servoSplitWallet.attach(9);
   servoExtractor.attach(2);
@@ -29,6 +31,7 @@ void setup() {
 
 void loop() {
   // testGrip();
+  // testAlignment();
   
   if (walletIsInExtractor()) {
     processWallet();
@@ -48,6 +51,10 @@ void processWallet() {
   // adjust position of the wallet
   slideGripperIn();
   clearGrip();
+  while (!walletIsAligned()) {
+    swingGripperIn();
+    swingGripperOut();
+  }
   swingGripperIn();
   lockWallet();
   swingGripperOut();
@@ -96,6 +103,11 @@ void testGrip() {
   delay(2000);
 }
 
+void testAlignment() {
+  walletIsAligned();
+  delay(1000);
+}
+
 void feedWallet() {
  Serial.println("Feeding wallet (~5cm)...");
  stepperFeeder.moveDegrees(true, 360);
@@ -123,6 +135,17 @@ bool walletIsInExtractor() {
     Serial.println("  No :-(");
   }
   return inExtractor;
+}
+
+bool walletIsAligned() {
+  Serial.println("Checking if wallet is aligned...");
+  bool isAligned = (digitalRead(pinWalletIsAligned) == LOW);
+  if (isAligned) {
+    Serial.println("  Yes :-)");
+  } else {
+    Serial.println("  No :-(");
+  }
+  return isAligned;
 }
 
 void swingGripperIn() {
