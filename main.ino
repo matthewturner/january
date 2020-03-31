@@ -51,11 +51,11 @@ void processWallet() {
   // adjust position of the wallet
   slideGripperIn();
   clearGrip();
-  while (!walletIsAligned()) {
-    swingGripperIn();
-    swingGripperOut();
-  }
   swingGripperIn();
+  while (!walletIsAligned()) {
+    swingGripperTo(50);
+    swingGripperIn();
+  }
   lockWallet();
   swingGripperOut();
 
@@ -150,25 +150,30 @@ bool walletIsAligned() {
 
 void swingGripperIn() {
   Serial.println("Swinging gripper in...");
-  servoExtractor.write(5);
+  swingGripperTo(0);
+}
+
+void swingGripperOut() {
+  Serial.println("Swinging gripper out...");
+  swingGripperTo(100);
+}
+
+void swingGripperTo(int percentageFromIn) {
+  Serial.println("Swinging gripper to...");
+  int position = (90 / 100.0f * percentageFromIn) + 5;
+  servoExtractor.write(position);
   delay(500);
 }
 
 void slideGripperOut() {
   Serial.println("Sliding gripper away...");
   servoSlider.write(0);
-  delay(500); 
+  delay(500);
 }
 
 void slideGripperIn() {
   Serial.println("Sliding gripper back...");
   servoSlider.write(130);
-  delay(500);
-}
-
-void swingGripperOut() {
-  Serial.println("Swinging gripper out...");
-  servoExtractor.write(100);
   delay(500);
 }
 
